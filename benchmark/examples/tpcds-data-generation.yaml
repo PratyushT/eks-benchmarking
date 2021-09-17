@@ -1,7 +1,7 @@
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: tpcds-benchmark-data-generation-1g
+  name: tpcds-benchmark-data-generation-100g
   namespace: default
 spec:
   type: Scala
@@ -12,15 +12,15 @@ spec:
   mode: cluster
   arguments:
   # TPC-DS data localtion
-    - "s3a://spark-k8s-data/TPCDS-TEST-1G"
+    - "s3a://1g-spark-k8s-data/TPCDS-TEST-100G"
   # Path to kit in the docker image
     - "/opt/tpcds-kit/tools"
   # Data Format
     - "parquet"
   # Scale factor (in GB)
-    - "1"
-  # Generate data num partitions
     - "100"
+  # Generate data num partitions
+    - "1000"
   # Create the partitioned fact tables
     - "false"
   # Shuffle to get partitions coalesced into single files.
@@ -51,7 +51,7 @@ spec:
     memory: "8000m"
     serviceAccount: spark
   executor:
-    instances: 3
+    instances: 8
     cores: 1
     memory: "8000m"
     memoryOverhead: 2g
