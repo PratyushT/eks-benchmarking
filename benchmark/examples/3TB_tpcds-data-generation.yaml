@@ -1,45 +1,38 @@
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: tpcds-benchmark-sql-1g
+  name: tpcds-benchmark-data-generation-100g
   namespace: default
 spec:
   type: Scala
-  mode: cluster
   image: seedjeffwan/spark:v2.4.5-examples
   sparkVersion: 2.4.5
-  mainClass: com.amazonaws.eks.tpcds.BenchmarkSQL
+  mainClass: com.amazonaws.eks.tpcds.DataGeneration
   mainApplicationFile: local:///opt/spark/examples/jars/eks-spark-benchmark-assembly-1.0.jar
+  mode: cluster
   arguments:
   # TPC-DS data localtion
-    - "s3a://1g-spark-k8s-data/TPCDS-TEST-1G"
-  # results location
-    - "s3a://1g-spark-k8s-data/TPCDS-TEST-1G-RESULT"
+    - "s3a://1g-spark-k8s-data/TPCDS-TEST-1000G"
   # Path to kit in the docker image
     - "/opt/tpcds-kit/tools"
   # Data Format
     - "parquet"
   # Scale factor (in GB)
-    - "1"
-  # Number of iterations
-    - "1"
-  # Optimize queries
+    - "1000"
+  # Generate data num partitions
+    - "10000"
+  # Create the partitioned fact tables
     - "false"
-  # Filter queries, will run all if empty - "q70-v2.4,q82-v2.4,q64-v2.4"
-    - ""
+  # Shuffle to get partitions coalesced into single files.
+    - "false"
   # Logging set to WARN
     - "true"
   sparkConf:
     "spark.speculation": "false"
     "spark.network.timeout": "2400"
-    # TPCDs Specific
-    "spark.sql.broadcastTimeout": "7200"
-    "spark.sql.crossJoin.enabled": "true"
-    "spark.sql.parquet.mergeSchema": "false"
-    "spark.sql.parquet.filterPushdown": "true"
-    # S3 credential
+    # S3 Credential
     "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.InstanceProfileCredentialsProvider"
-    # S3 Specific config
+    # S3 Configs
     "spark.hadoop.fs.s3a.connection.timeout": "1200000"
     "spark.hadoop.fs.s3a.path.style.access": "true"
     "spark.hadoop.fs.s3a.connection.maximum": "200"
@@ -58,9 +51,9 @@ spec:
     memory: "8000m"
     serviceAccount: spark
   executor:
-    instances: 3
+    instances: 15
     cores: 1
     memory: "8000m"
-    memoryOverhead: "2g"
+    memoryOverhead: 2g
   restartPolicy:
     type: Never
